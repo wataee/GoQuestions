@@ -1,7 +1,14 @@
 package main
 
-import "fmt"
+import (
+    "github.com/gin-gonic/gin"
+
+    "goquestions/internal/middleware"
+)
 
 func main() {
-    fmt.Println("Hello World!")
+    r := gin.Default()
+
+    r.Use(middleware.CORS()) // ВСЕГДА ПЕРВЫЙ
 }
+
