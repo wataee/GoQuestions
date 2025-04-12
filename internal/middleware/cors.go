@@ -9,10 +9,10 @@ import (
 
 func CORS() gin.HandlerFunc {
 	return cors.New(cors.Config{
-		AllowOrigins: []string{"*"},
-		AllowMethods: []string{"PUT", "GET", "POST", "DELETE"},
-		AllowHeaders: []string{"Origin", "Content-Type", "Authorization"},
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"PUT", "GET", "POST", "DELETE"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		AllowCredentials: true,
-		MaxAge: 12 * time.Hour,
+		MaxAge:           12 * time.Hour,
 	})
 }
