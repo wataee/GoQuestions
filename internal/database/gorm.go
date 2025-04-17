@@ -6,7 +6,7 @@ import (
 	"gorm.io/driver/postgres"
   "gorm.io/gorm"
 	
-	"goquestions/config"
+	"github.com/wataee/GoQuestions/config"
 )
 
 var DB *gorm.DB
