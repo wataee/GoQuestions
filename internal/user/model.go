@@ -1,4 +1,4 @@
-package auth
+package user
 
 import (
 	"github.com/golang-jwt/jwt/v5"

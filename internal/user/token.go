@@ -1,7 +1,7 @@
-package auth
+package user
 
 import (
-	"fmt"
+	//"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -10,7 +10,7 @@ import (
 
 
 
-func GenerateToken(userID int, username string, role string)(string, error) {
+func GenerateToken(userID int, username string, role string) string {
 	claims := UserClaims{
 		UserID: userID,
 		Username: username,
@@ -23,12 +23,10 @@ func GenerateToken(userID int, username string, role string)(string, error) {
 	}
 	
 	createToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := createToken.SignedString(config.JwtKey)
-	if err != nil {
-		fmt.Errorf("Не удалось ")
-	}
+	tokenString, _ := createToken.SignedString(config.JwtKey)
+	
 
 	
-	return tokenString, nil
+	return tokenString
 }
 
