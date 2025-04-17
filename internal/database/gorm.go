@@ -1,6 +1,7 @@
 package database
 
 import (
+	"log"
 	"fmt"
 
 	"gorm.io/driver/postgres"
@@ -18,9 +19,9 @@ func ConnectDB() {
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		panic("Не удалось подключится к бд" + err.Error())
+		log.Fatalf("Не удалось подключиться к БД: %v", err)
 	}
 
 	DB = db
-	fmt.Println("Успешное подключение к БД!")
+	log.Println("Успешное подключение к БД!")
 }

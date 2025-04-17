@@ -3,11 +3,11 @@ package middleware
 import (
 	"net/http"
 	"strings"
-	"fmt"
+	"log"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/sirupsen/logrus"
+
 
 	"github.com/wataee/GoQuestions/config"
 )
@@ -16,7 +16,8 @@ func AuthMiddlware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenString := c.GetHeader("Authorization")
 		if tokenString == "" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Missing token"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Токен не найден в Header/Authorization"})
+			return
 		}
 
 		if strings.HasPrefix(tokenString, "Bearer ") {
@@ -24,13 +25,13 @@ func AuthMiddlware() gin.HandlerFunc {
 		}
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fmt.Errorf("Токен сигнинг метод пезда")
+				log.Fatal("Ошибка при подписи токена")
 			}
 			return config.JwtKey, nil
 		})
 
 		if err != nil || !token.Valid {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Неверный токен Инвалид"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Токен недействителен"})
 		}
 
 		c.Next()

@@ -1,7 +1,7 @@
 package user
 
 import (
-	//"fmt"
+	"log"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -23,9 +23,10 @@ func GenerateToken(userID int, username string, role string) string {
 	}
 	
 	createToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, _ := createToken.SignedString(config.JwtKey)
-	
-
+	tokenString, err := createToken.SignedString(config.JwtKey)
+	if err != nil {
+		log.Fatalf("Не удалось создать и подписать токен: %v",err)
+	}
 	
 	return tokenString
 }
