@@ -33,7 +33,7 @@ func generateToken(userID int, username string, role string, ttl time.Duration) 
 	createToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := createToken.SignedString(config.JwtKey)
 	if err != nil {
-		log.Fatalf("Не удалось создать и подписать токен: %v",err)
+		log.Printf("Не удалось создать и подписать токен: %v",err)
 	}
 	
 	return tokenString
