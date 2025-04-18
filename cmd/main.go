@@ -15,9 +15,10 @@ func main() {
     database.ConnectDB()
     r.Use(middleware.CORS()) // ВСЕГДА ПЕРВЫЙ
 
-    auth := r.Group("/auth")
+    userGroup := r.Group("/user")
     {
-        auth.GET("/login", user.AuthHandler)
+        userGroup.GET("/login", user.LoginHandler)
+        userGroup.POST("/refresh", user.RefreshTokenHandler)
     }
     
     

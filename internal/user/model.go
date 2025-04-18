@@ -10,3 +10,8 @@ type UserClaims struct {
 	Role     string `json:"role"`
 	jwt.RegisteredClaims
 }
+
+type TokenPair struct {
+	AccessToken string `json:"access_token"`
+	RefreshToken string  `json:"refresh_token"`
+}
