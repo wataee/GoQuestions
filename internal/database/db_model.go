@@ -12,6 +12,5 @@ type Users struct {
 type Questions struct {
 	ID uint 							`gorm:"primaryKey;not null"`
 	QuestionText string  	`gorm:"type:text;not null"`
-	CorrectAnswer bool 		`gorm:"type:bool;not null"`
 	CreatedAt time.Time
 }

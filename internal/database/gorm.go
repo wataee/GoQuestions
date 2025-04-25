@@ -10,9 +10,7 @@ import (
 	"github.com/wataee/GoQuestions/config"
 )
 
-var DB *gorm.DB
-
-func ConnectDB() {
+func ConnectDB() (*gorm.DB, error) {
 	cfg := config.GetDBConfig()
 
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s", cfg.Host, cfg.User, cfg.Password, cfg.Name, cfg.Port, cfg.SSLMode)
@@ -22,6 +20,6 @@ func ConnectDB() {
 		log.Fatalf("Не удалось подключиться к БД: %v", err)
 	}
 
-	DB = db
 	log.Println("Успешное подключение к БД!")
+	return db, nil
 }
