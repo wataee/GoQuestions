@@ -4,7 +4,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-type User struct {
+type UserInput struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
