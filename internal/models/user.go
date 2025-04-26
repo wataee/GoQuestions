@@ -1,4 +1,4 @@
-package user
+package models
 
 import (
 	"github.com/golang-jwt/jwt/v5"
@@ -7,6 +7,7 @@ import (
 type UserInput struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
+	Role string `json:"role"`
 }
 
 type UserClaims struct {

@@ -9,7 +9,7 @@ import (
 	"github.com/wataee/GoQuestions/internal/user"
 )
 
-func SetupRouter() *gin.Engine {
+func SetupRouter(userService user.UserService) *gin.Engine {
 	r := gin.Default()
 	r.Use(middleware.CORS()) // ВСЕГДА ПЕРВЫЙ
 

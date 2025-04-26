@@ -6,20 +6,21 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/wataee/GoQuestions/config"
+	"github.com/wataee/GoQuestions/internal/models"
 )
 
-func GenerateTokenPair(userID int, username string, role string) TokenPair {
+func GenerateTokenPair(userID int, username string, role string) models.TokenPair {
 	accessToken := generateToken(userID, username, role, 2 * time.Hour)
 	refreshToken := generateToken(userID, username, role, 7 * 24 * time.Hour)
 
-	return TokenPair{
+	return models.TokenPair{
 		AccessToken: accessToken,
 		RefreshToken: refreshToken,
 	}
 }
 
 func generateToken(userID int, username string, role string, ttl time.Duration) string {
-	claims := UserClaims{
+	claims := models.UserClaims{
 		UserID: userID,
 		Username: username,
 		Role: role,
@@ -39,20 +40,20 @@ func generateToken(userID int, username string, role string, ttl time.Duration) 
 	return tokenString
 }
 
-func RefreshToken(refreshToken string) (TokenPair, error) {
-	token, err := jwt.ParseWithClaims(refreshToken, &UserClaims{}, func(token *jwt.Token) (interface{}, error) {
+func RefreshToken(refreshToken string) (models.TokenPair, error) {
+	token, err := jwt.ParseWithClaims(refreshToken, &models.UserClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return config.JwtKey, nil
 	})
 
 	if err != nil || !token.Valid {
 		log.Printf("Ошибка при парсинге токена: %v", err)
-		return TokenPair{}, nil
+		return models.TokenPair{}, nil
 	}
 
-	claims, ok := token.Claims.(*UserClaims)
+	claims, ok := token.Claims.(*models.UserClaims)
 	if !ok {
 		log.Printf("Type asserion ошибка: %v", ok)
-		return TokenPair{}, nil
+		return models.TokenPair{}, nil
 	}
 
 	return GenerateTokenPair(claims.UserID, claims.Username, claims.Role), nil
