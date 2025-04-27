@@ -1,9 +1,8 @@
 package router
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
+
 
 	"github.com/wataee/GoQuestions/internal/middleware"
 	"github.com/wataee/GoQuestions/internal/user"
@@ -11,23 +10,25 @@ import (
 
 func SetupRouter(userService user.UserService) *gin.Engine {
 	r := gin.Default()
-	r.Use(middleware.CORS()) // ВСЕГДА ПЕРВЫЙ
+	r.Use(middleware.CORS())
 
-	userGroup := r.Group("/user")
+	r.POST("/login", user.LoginHandler) // Login/Registration
+	r.POST("/refresh", user.RefreshTokenHandler)
+
+	auth := r.Group("/")
+	auth.Use(middleware.AuthMiddlware())
 	{
-		userGroup.GET("/login", user.LoginHandler)
-		userGroup.POST("/refresh", user.RefreshTokenHandler)
+		auth.GET("/profile", )
+		auth.GET("/questions", )
+		auth.POST("/addquestion", )
 	}
 
-	protected := r.Group("/protected")
-	protected.Use(middleware.AuthMiddlware())
+	admin := r.Group("/admin")
+	// admin.Use(middleware.AdminAuthMiddleware())
 	{
-		protected.GET("/", func(c *gin.Context) {
-			c.JSON(http.StatusOK, gin.H{
-				"test": "super",
-			})
-		})
+		admin.GET("/user_list", )
+		admin.DELETE("/delete_user/:id", )
 	}
-
+	
 	return r
 }

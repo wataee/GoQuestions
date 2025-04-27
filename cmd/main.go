@@ -7,6 +7,7 @@ import (
 	"github.com/wataee/GoQuestions/internal/user"
 )
 
+
 func main() {
     db,_ := database.ConnectDB()
     userRepo := repository.NewUserRepository(db)

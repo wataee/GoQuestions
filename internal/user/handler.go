@@ -5,9 +5,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	// "github.com/golang-jwt/jwt/v5"
-	// "github.com/wataee/GoQuestions/config"
 )
+
 
 func LoginHandler(с *gin.Context) {
 	fmt.Println(GenerateTokenPair(13,"lol","admin"))

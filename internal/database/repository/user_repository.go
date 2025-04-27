@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"github.com/wataee/GoQuestions/internal/database"
 	"github.com/wataee/GoQuestions/internal/models"
 	"gorm.io/gorm"
 )
@@ -24,7 +23,7 @@ func (r *userRepository) CreateUser(user models.UserInput) error {
 }
 
 func (r *userRepository) FindByUsername(username string) (bool, error) {
-	var user database.Users
+	var user models.Users
 	result := r.db.Where("username = ?", username).First(&user)
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
