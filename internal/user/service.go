@@ -1,8 +1,8 @@
 package user
 
 import (
-	"log"
 	"time"
+	"errors"
 
 	"github.com/golang-jwt/jwt/v5"
 
@@ -11,8 +11,12 @@ import (
 	"github.com/wataee/GoQuestions/internal/database/repository"
 )
 
+var errInvalidClaims = errors.New("невалидные claims") 
+
 type UserService interface {
-	Login(input models.UserInput) (string, error)
+	Login(input models.UserInput) (TokenPair, error)
+	RefreshToken(refreshToken string) (TokenPair, error)
+
 }
 
 type userService struct {
@@ -23,8 +27,25 @@ func NewUserService(repo repository.UserRepository) UserService {
 	return &userService{repo: repo}
 }
 
-func (s *userService) Login(input models.UserInput) (string, error) {
-	return "", nil
+func (s *userService) Login(input models.UserInput) (TokenPair, error) {
+	isUserInDb, err := s.repo.FindByUsername(input.Username)
+	if err != nil {
+		return TokenPair{}, err
+	}
+	if !isUserInDb {
+		//здесь код
+		userId, err := s.repo.CreateUser(input)
+		if err != nil {
+			return TokenPair{}, nil
+		}
+		return s.GenerateTokenPair(userId, input.Username, input.Role), nil
+	}
+		userId, err := s.repo.GetUserIdByUsername(input.Username)
+		if err != nil {
+				return TokenPair{}, err
+		}
+
+		return s.GenerateTokenPair(int(userId), input.Username, input.Role), nil
 }
 
 type UserClaims struct {
@@ -39,9 +60,9 @@ type TokenPair struct {
 	RefreshToken string  `json:"refresh_token"`
 }
 
-func GenerateTokenPair(userID int, username string, role string) TokenPair {
-	accessToken := generateToken(userID, username, role, 2 * time.Hour)
-	refreshToken := generateToken(userID, username, role, 7 * 24 * time.Hour)
+func (s *userService)GenerateTokenPair(userID int, username string, role string) TokenPair {
+	accessToken, _ := s.generateToken(userID, username, role, 2 * time.Hour)
+	refreshToken, _ := s.generateToken(userID, username, role, 7 * 24 * time.Hour)
 
 	return TokenPair{
 		AccessToken: accessToken,
@@ -49,7 +70,7 @@ func GenerateTokenPair(userID int, username string, role string) TokenPair {
 	}
 }
 
-func generateToken(userID int, username string, role string, ttl time.Duration) string {
+func (s *userService)generateToken(userID int, username string, role string, ttl time.Duration) (string, error) {
 	claims := UserClaims{
 		UserID: userID,
 		Username: username,
@@ -64,29 +85,26 @@ func generateToken(userID int, username string, role string, ttl time.Duration) 
 	createToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := createToken.SignedString(config.JwtKey)
 	if err != nil {
-		log.Printf("Не удалось создать и подписать токен: %v",err)
+		return "", err
 	}
 	
-	return tokenString
+	return tokenString, nil
 }
 
-func RefreshToken(refreshToken string) (TokenPair, error) {
+func (s *userService)RefreshToken(refreshToken string) (TokenPair, error) {
 	token, err := jwt.ParseWithClaims(refreshToken, &UserClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return config.JwtKey, nil
 	})
-
 	if err != nil || !token.Valid {
-		log.Printf("Ошибка при парсинге токена: %v", err)
-		return TokenPair{}, nil
+		return TokenPair{}, err
 	}
 
 	claims, ok := token.Claims.(*UserClaims)
 	if !ok {
-		log.Printf("Type asserion ошибка: %v", ok)
-		return TokenPair{}, nil
+		return TokenPair{}, errInvalidClaims
 	}
 
-	return GenerateTokenPair(claims.UserID, claims.Username, claims.Role), nil
+	return s.GenerateTokenPair(claims.UserID, claims.Username, claims.Role), nil
 
 }
  

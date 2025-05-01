@@ -8,15 +8,15 @@ import (
 	"github.com/wataee/GoQuestions/internal/user"
 )
 
-func SetupRouter(userService user.UserService) *gin.Engine {
+func SetupRouter(userHandler *user.Handler) *gin.Engine {
 	r := gin.Default()
 	r.Use(middleware.CORS())
 
-	r.POST("/login", user.LoginHandler) // Login/Registration
-	r.POST("/refresh", user.RefreshTokenHandler)
+	r.POST("/login", userHandler.Login) // Login/Registration
+	r.POST("/refresh", userHandler.RefreshToken)
 
 	auth := r.Group("/")
-	auth.Use(middleware.AuthMiddlware())
+	auth.Use(middleware.AuthMiddleware())
 	{
 		auth.GET("/profile", )
 		auth.GET("/questions", )
@@ -24,7 +24,7 @@ func SetupRouter(userService user.UserService) *gin.Engine {
 	}
 
 	admin := r.Group("/admin")
-	// admin.Use(middleware.AdminAuthMiddleware())
+	//admin.Use(middleware.AdminAuthMiddleware())
 	{
 		admin.GET("/user_list", )
 		admin.DELETE("/delete_user/:id", )

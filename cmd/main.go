@@ -12,7 +12,8 @@ func main() {
     db,_ := database.ConnectDB()
     userRepo := repository.NewUserRepository(db)
     userService := user.NewUserService(userRepo)
-    r := router.SetupRouter(userService)
+    userHandler := user.NewHandler(userService)
+    r := router.SetupRouter(userHandler)
     r.Run()
 }
 
