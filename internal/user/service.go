@@ -1,14 +1,16 @@
 package user
 
 import (
-	"time"
 	"errors"
+	"fmt"
+	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/wataee/GoQuestions/config"
-	"github.com/wataee/GoQuestions/internal/models"
 	"github.com/wataee/GoQuestions/internal/database/repository"
+	"github.com/wataee/GoQuestions/internal/models"
 )
 
 var errInvalidClaims = errors.New("невалидные claims") 
@@ -29,23 +31,37 @@ func NewUserService(repo repository.UserRepository) UserService {
 
 func (s *userService) Login(input models.UserInput) (TokenPair, error) {
 	isUserInDb, err := s.repo.FindByUsername(input.Username)
+
 	if err != nil {
 		return TokenPair{}, err
 	}
+
 	if !isUserInDb {
-		//здесь код
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), 12)
+		if err != nil {
+			return TokenPair{}, err
+		}
+
+		input.Password = string(hashedPassword)
+		
 		userId, err := s.repo.CreateUser(input)
 		if err != nil {
-			return TokenPair{}, nil
+			return TokenPair{}, err
 		}
 		return s.GenerateTokenPair(userId, input.Username, input.Role), nil
 	}
-		userId, err := s.repo.GetUserIdByUsername(input.Username)
-		if err != nil {
-				return TokenPair{}, err
-		}
+	// если зареган
+	user, err := s.repo.GetByUsername(input.Username)
+	if err != nil {
+		return TokenPair{}, err
+	}
 
-		return s.GenerateTokenPair(int(userId), input.Username, input.Role), nil
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password))
+	if err != nil {
+		return TokenPair{}, err
+	}
+	fmt.Println("Если зареган")
+	return s.GenerateTokenPair(int(user.ID), input.Username, input.Role), nil
 }
 
 type UserClaims struct {

@@ -10,7 +10,7 @@ import (
 type UserRepository interface {
 	CreateUser(user models.UserInput) (int,error)
 	FindByUsername(username string) (bool, error)
-	GetUserIdByUsername(username string) (uint, error)
+	GetByUsername(username string) (models.Users, error)
  }
 
 type userRepository struct {
@@ -35,14 +35,6 @@ func (r *userRepository) CreateUser(input models.UserInput) (int, error) {
 	return int(user.ID), nil
 }
 
-func (r *userRepository) GetUserIdByUsername(username string) (uint, error) {
-	var user models.Users
-	result := r.db.Where("username = ?", username).First(&user)
-	if result.Error != nil {
-			return 0, result.Error
-	}
-	return user.ID, nil
-}
 
 func (r *userRepository) FindByUsername(username string) (bool, error) {
 	var user models.Users
@@ -55,4 +47,15 @@ func (r *userRepository) FindByUsername(username string) (bool, error) {
 		}
 	}
 	return true, nil // Если найден
+}
+
+func (r *userRepository) GetByUsername(username string) (models.Users, error) {
+	var user models.Users
+	if err := r.db.Where("username = ?", username).First(&user).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return models.Users{}, gorm.ErrRecordNotFound
+		}
+		return models.Users{}, err
+	}
+	return user, nil
 }

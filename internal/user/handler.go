@@ -5,6 +5,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
+
 	"github.com/wataee/GoQuestions/internal/models"
 )
 
@@ -17,13 +19,31 @@ func NewHandler(service UserService) *Handler {
 }
 
 func (h *Handler) Login(c *gin.Context) {
+	validate := validator.New()
+	var errorMessages []string
 	var input models.UserInput
+
 	if err := c.BindJSON(&input); err != nil {
-		c.JSON(400, gin.H{"error":"Не удалось распарсить json"})
+		c.JSON(http.StatusBadRequest, gin.H{"error":"Не удалось распарсить json"})
 		return
 	}
+	if err := validate.Struct(input); err != nil {
+		for _,e := range err.(validator.ValidationErrors) {
+			errorMessages = append(errorMessages, fmt.Sprintf("Поле: %s | Тег валидации: %s", e.Field(), e.Tag()))
+		}
+	}
+	if len(errorMessages) > 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": errorMessages})
+		return
+	}
+
 	tokens, err := h.service.Login(input)
-	fmt.Println(tokens, err)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error":err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, tokens)
 }
 
 
@@ -32,16 +52,13 @@ func (h *Handler) Login(c *gin.Context) {
 
 
 func (h *Handler) RefreshToken(c *gin.Context) {
-	var request struct {
-		RefreshToken string `json:"refresh_token"`
-	}
-
-	if err := c.ShouldBindJSON(&request); err != nil {
+	var RefreshTokenRequest models.RefreshTokenRequest
+	if err := c.ShouldBindJSON(&RefreshTokenRequest); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Не удалось взять RefreshToken из JSON"})
 		return
 	}
 
-	tokenPair, err := h.service.RefreshToken(request.RefreshToken)
+	tokenPair, err := h.service.RefreshToken(RefreshTokenRequest.RefreshToken)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ошибка создания пары токенов"})
 		return
