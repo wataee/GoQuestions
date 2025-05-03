@@ -13,8 +13,9 @@ type Users struct {
 }
 
 type Questions struct {
-	ID uint 							`gorm:"primaryKey;not null"`
-	QuestionText string  	`gorm:"type:text;not null"`
-	CreatedAt time.Time 	`gorm:"autoCreateTime;not null"`
-	UpdatedAt time.Time 	`gorm:"autoUpdateTime;not null"`
+    ID            uint       `gorm:"primaryKey;not null"`
+    QuestionText  string     `gorm:"type:text;not null"`
+    CorrectAnswer string     `gorm:"type:text;not null"`
+    CreatedAt     time.Time `gorm:"autoCreateTime;not null"`
+    UpdatedAt     time.Time `gorm:"autoUpdateTime;not null"`
 }

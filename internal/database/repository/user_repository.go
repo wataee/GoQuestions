@@ -1,15 +1,13 @@
 package repository
 
 import (
-	"fmt"
-
-	"github.com/wataee/GoQuestions/internal/models"
 	"gorm.io/gorm"
+	
+	"github.com/wataee/GoQuestions/internal/models"
 )
 
 type UserRepository interface {
 	CreateUser(user models.UserInput) (int,error)
-	FindByUsername(username string) (bool, error)
 	GetByUsername(username string) (models.Users, error)
  }
 
@@ -30,23 +28,9 @@ func (r *userRepository) CreateUser(input models.UserInput) (int, error) {
 
 	err := r.db.Create(&user).Error
 	if err != nil {
-		return 0, fmt.Errorf("ошибка при создании юзера в БД: %v", err)
+		return 0, err
 	}
 	return int(user.ID), nil
-}
-
-
-func (r *userRepository) FindByUsername(username string) (bool, error) {
-	var user models.Users
-	result := r.db.Where("username = ?", username).First(&user)
-	if result.Error != nil {
-		if result.Error == gorm.ErrRecordNotFound {
-			return false, nil // Если не найден пользователь	
-		} else {
-			return false, result.Error // Другая ошибка 
-		}
-	}
-	return true, nil // Если найден
 }
 
 func (r *userRepository) GetByUsername(username string) (models.Users, error) {

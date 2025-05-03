@@ -2,9 +2,9 @@ package user
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
+	"gorm.io/gorm"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 
@@ -30,37 +30,33 @@ func NewUserService(repo repository.UserRepository) UserService {
 }
 
 func (s *userService) Login(input models.UserInput) (TokenPair, error) {
-	isUserInDb, err := s.repo.FindByUsername(input.Username)
-
-	if err != nil {
-		return TokenPair{}, err
-	}
-
-	if !isUserInDb {
+	user, err := s.repo.GetByUsername(input.Username)
+	if err == gorm.ErrRecordNotFound {
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), 12)
 		if err != nil {
 			return TokenPair{}, err
 		}
 
 		input.Password = string(hashedPassword)
-		
+
 		userId, err := s.repo.CreateUser(input)
 		if err != nil {
 			return TokenPair{}, err
 		}
 		return s.GenerateTokenPair(userId, input.Username, input.Role), nil
 	}
-	// если зареган
-	user, err := s.repo.GetByUsername(input.Username)
 	if err != nil {
-		return TokenPair{}, err
+		return TokenPair{}, nil
 	}
+	// если зареган
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password))
 	if err != nil {
 		return TokenPair{}, err
 	}
-	fmt.Println("Если зареган")
+	if input.Role != user.Role {
+		return TokenPair{}, errors.New("Не совпадает роль из БД с введённой ролью")
+	}
 	return s.GenerateTokenPair(int(user.ID), input.Username, input.Role), nil
 }
 

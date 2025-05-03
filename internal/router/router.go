@@ -6,9 +6,10 @@ import (
 
 	"github.com/wataee/GoQuestions/internal/middleware"
 	"github.com/wataee/GoQuestions/internal/user"
+	"github.com/wataee/GoQuestions/internal/questions"
 )
 
-func SetupRouter(userHandler *user.Handler) *gin.Engine {
+func SetupRouter(userHandler *user.Handler, questionsHandler *questions.Handler) *gin.Engine {
 	r := gin.Default()
 	r.Use(middleware.CORS())
 
