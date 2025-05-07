@@ -16,8 +16,9 @@ import (
 var errInvalidClaims = errors.New("невалидные claims") 
 
 type UserService interface {
-	Login(input models.UserInput) (TokenPair, error)
-	RefreshToken(refreshToken string) (TokenPair, error)
+	Login(input models.UserInput) (models.TokenPair, error)
+	RefreshToken(refreshToken string) (models.TokenPair, error)
+	GetProfile(userID int) (models.ProfileDTO, error)
 
 }
 
@@ -29,61 +30,63 @@ func NewUserService(repo repository.UserRepository) UserService {
 	return &userService{repo: repo}
 }
 
-func (s *userService) Login(input models.UserInput) (TokenPair, error) {
+func (s *userService) Login(input models.UserInput) (models.TokenPair, error) {
 	user, err := s.repo.GetByUsername(input.Username)
 	if err == gorm.ErrRecordNotFound {
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), 12)
 		if err != nil {
-			return TokenPair{}, err
+			return models.TokenPair{}, err
 		}
 
 		input.Password = string(hashedPassword)
 
 		userId, err := s.repo.CreateUser(input)
 		if err != nil {
-			return TokenPair{}, err
+			return models.TokenPair{}, err
 		}
 		return s.GenerateTokenPair(userId, input.Username, input.Role), nil
 	}
 	if err != nil {
-		return TokenPair{}, nil
+		return models.TokenPair{}, nil
 	}
 	// если зареган
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password))
 	if err != nil {
-		return TokenPair{}, err
+		return models.TokenPair{}, err
 	}
 	if input.Role != user.Role {
-		return TokenPair{}, errors.New("Не совпадает роль из БД с введённой ролью")
+		return models.TokenPair{}, errors.New("не совпадает роль из БД с введённой ролью")
 	}
 	return s.GenerateTokenPair(int(user.ID), input.Username, input.Role), nil
 }
 
-type UserClaims struct {
-	UserID   int    `json:"user_id"`
-	Username string `json:"username"`
-	Role     string `json:"role"`
-	jwt.RegisteredClaims
+func (s *userService) GetProfile(userID int) (models.ProfileDTO, error){
+	user, err := s.repo.GetByID(userID)
+	if err != nil {
+		return models.ProfileDTO{}, err
+	}
+	return models.ProfileDTO{
+		ID: user.ID,
+		Username: user.Username,
+		Role: user.Role,
+		Answers: user.Answers,
+		CreatedAt: user.CreatedAt,
+	}, nil
 }
 
-type TokenPair struct {
-	AccessToken string `json:"access_token"`
-	RefreshToken string  `json:"refresh_token"`
-}
-
-func (s *userService)GenerateTokenPair(userID int, username string, role string) TokenPair {
+func (s *userService)GenerateTokenPair(userID int, username string, role string) models.TokenPair {
 	accessToken, _ := s.generateToken(userID, username, role, 2 * time.Hour)
 	refreshToken, _ := s.generateToken(userID, username, role, 7 * 24 * time.Hour)
 
-	return TokenPair{
+	return models.TokenPair{
 		AccessToken: accessToken,
 		RefreshToken: refreshToken,
 	}
 }
 
 func (s *userService)generateToken(userID int, username string, role string, ttl time.Duration) (string, error) {
-	claims := UserClaims{
+	claims := models.UserClaims{
 		UserID: userID,
 		Username: username,
 		Role: role,
@@ -103,17 +106,17 @@ func (s *userService)generateToken(userID int, username string, role string, ttl
 	return tokenString, nil
 }
 
-func (s *userService)RefreshToken(refreshToken string) (TokenPair, error) {
-	token, err := jwt.ParseWithClaims(refreshToken, &UserClaims{}, func(token *jwt.Token) (interface{}, error) {
+func (s *userService)RefreshToken(refreshToken string) (models.TokenPair, error) {
+	token, err := jwt.ParseWithClaims(refreshToken, &models.UserClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return config.JwtKey, nil
 	})
 	if err != nil || !token.Valid {
-		return TokenPair{}, err
+		return models.TokenPair{}, err
 	}
 
-	claims, ok := token.Claims.(*UserClaims)
+	claims, ok := token.Claims.(*models.UserClaims)
 	if !ok {
-		return TokenPair{}, errInvalidClaims
+		return models.TokenPair{}, errInvalidClaims
 	}
 
 	return s.GenerateTokenPair(claims.UserID, claims.Username, claims.Role), nil

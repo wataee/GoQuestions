@@ -24,7 +24,7 @@ func (h *Handler) Login(c *gin.Context) {
 	var input models.UserInput
 
 	if err := c.BindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error":"Не удалось распарсить json"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	if err := validate.Struct(input); err != nil {
@@ -46,23 +46,31 @@ func (h *Handler) Login(c *gin.Context) {
 	c.JSON(http.StatusOK, tokens)
 }
 
-
-
-
-
-
 func (h *Handler) RefreshToken(c *gin.Context) {
 	var RefreshTokenRequest models.RefreshTokenRequest
 	if err := c.ShouldBindJSON(&RefreshTokenRequest); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Не удалось взять RefreshToken из JSON"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	tokenPair, err := h.service.RefreshToken(RefreshTokenRequest.RefreshToken)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ошибка создания пары токенов"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, tokenPair)
+}
+
+func (h *Handler) Profile(c *gin.Context) {
+	UserID, exists := c.Get("UserID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Не удалось взять UserID из userclaims"})
+	}
+	profile,err := h.service.GetProfile(UserID.(int))
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+	}
+
+	c.JSON(http.StatusOK, profile)
 }

@@ -19,8 +19,8 @@ func SetupRouter(userHandler *user.Handler, questionsHandler *questions.Handler)
 	auth := r.Group("/")
 	auth.Use(middleware.AuthMiddleware())
 	{
-		auth.GET("/profile", )
-		auth.GET("/questions", )
+		auth.GET("/profile", userHandler.Profile)
+		auth.GET("/questions", questionsHandler.QuestionsHandler)
 		auth.POST("/addquestion", )
 	}
 

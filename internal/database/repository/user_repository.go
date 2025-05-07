@@ -9,6 +9,7 @@ import (
 type UserRepository interface {
 	CreateUser(user models.UserInput) (int,error)
 	GetByUsername(username string) (models.Users, error)
+	GetByID(userID int) (models.Users, error)
  }
 
 type userRepository struct {
@@ -39,6 +40,14 @@ func (r *userRepository) GetByUsername(username string) (models.Users, error) {
 		if err == gorm.ErrRecordNotFound {
 			return models.Users{}, gorm.ErrRecordNotFound
 		}
+		return models.Users{}, err
+	}
+	return user, nil
+}
+
+func (r *userRepository) GetByID(userID int) (models.Users, error) {
+	var user models.Users
+	if err := r.db.Where("id = ?", userID).First(&user).Error; err != nil {
 		return models.Users{}, err
 	}
 	return user, nil

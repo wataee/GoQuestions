@@ -1,12 +1,14 @@
 package middleware
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/wataee/GoQuestions/config"
+	"github.com/wataee/GoQuestions/internal/models"
 )
 
 func AuthMiddleware() gin.HandlerFunc {
@@ -23,7 +25,9 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		claims := &models.UserClaims{}
+
+		token, err := jwt.ParseWithClaims(tokenString, claims,func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, jwt.ErrSignatureInvalid
 			}
@@ -35,10 +39,9 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		if claims, ok := token.Claims.(jwt.MapClaims); ok {
-			c.Set("user_id", claims["sub"]) 
-		}
-
+		c.Set("UserID", claims.UserID)
+		c.Set("Username", claims.Subject)
+		fmt.Println(claims)
 		c.Next()
 	}
 }
