@@ -21,7 +21,7 @@ func NewHandler(service UserService) *Handler {
 func (h *Handler) Login(c *gin.Context) {
 	validate := validator.New()
 	var errorMessages []string
-	var input models.UserInput
+	var input models.UserInputDTO
 
 	if err := c.BindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

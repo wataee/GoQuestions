@@ -6,7 +6,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-type UserInput struct {
+type UserInputDTO struct {
 	Username string `json:"username" validate:"required,min=3,max=38,alphanum"`
 	Password string `json:"password" validate:"required,min=7,max=128"`
 	Role     string `json:"role" validate:"required,oneof=admin user"`
@@ -30,8 +30,9 @@ type TokenPair struct {
 }
 
 type UserClaims struct {
-	UserID   int    `json:"user_id"`
-	Username string `json:"username"`
-	Role     string `json:"role"`
+	UserID    int    `json:"user_id"`
+	Username  string `json:"username"`
+	Role      string `json:"role"`
+	TokenType string `json:"token_type"`
 	jwt.RegisteredClaims
 }

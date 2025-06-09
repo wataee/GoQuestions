@@ -7,7 +7,7 @@ import (
 )
 
 type UserRepository interface {
-	CreateUser(user models.UserInput) (int,error)
+	CreateUser(user models.UserInputDTO) (int,error)
 	GetByUsername(username string) (models.Users, error)
 	GetByID(userID int) (models.Users, error)
  }
@@ -20,7 +20,7 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 	return &userRepository{db: db}
 }
 
-func (r *userRepository) CreateUser(input models.UserInput) (int, error) {
+func (r *userRepository) CreateUser(input models.UserInputDTO) (int, error) {
 	user := models.Users{
     Username: input.Username,
     Password: input.Password,

@@ -16,7 +16,7 @@ import (
 var errInvalidClaims = errors.New("невалидные claims") 
 
 type UserService interface {
-	Login(input models.UserInput) (models.TokenPair, error)
+	Login(input models.UserInputDTO) (models.TokenPair, error)
 	RefreshToken(refreshToken string) (models.TokenPair, error)
 	GetProfile(userID int) (models.ProfileDTO, error)
 
@@ -30,7 +30,7 @@ func NewUserService(repo repository.UserRepository) UserService {
 	return &userService{repo: repo}
 }
 
-func (s *userService) Login(input models.UserInput) (models.TokenPair, error) {
+func (s *userService) Login(input models.UserInputDTO) (models.TokenPair, error) {
 	user, err := s.repo.GetByUsername(input.Username)
 	if err == gorm.ErrRecordNotFound {
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), 12)
@@ -75,38 +75,36 @@ func (s *userService) GetProfile(userID int) (models.ProfileDTO, error){
 	}, nil
 }
 
-func (s *userService)GenerateTokenPair(userID int, username string, role string) models.TokenPair {
-	accessToken, _ := s.generateToken(userID, username, role, 2 * time.Hour)
-	refreshToken, _ := s.generateToken(userID, username, role, 7 * 24 * time.Hour)
+func (s *userService) GenerateTokenPair(userID int, username string, role string) models.TokenPair {
+	accessToken, _ := s.generateToken(userID, username, role, 2*time.Hour, "access")
+	refreshToken, _ := s.generateToken(userID, username, role, 7*24*time.Hour, "refresh")
 
 	return models.TokenPair{
-		AccessToken: accessToken,
+		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 	}
 }
 
-func (s *userService)generateToken(userID int, username string, role string, ttl time.Duration) (string, error) {
+
+func (s *userService) generateToken(userID int, username string, role string, ttl time.Duration, tokenType string) (string, error) {
 	claims := models.UserClaims{
-		UserID: userID,
-		Username: username,
-		Role: role,
+		UserID:    userID,
+		Username:  username,
+		Role:      role,
+		TokenType: tokenType,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(ttl)),
-			IssuedAt: jwt.NewNumericDate(time.Now()),
-			Issuer: "goquestions",
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			Issuer:    "goquestions",
 		},
 	}
-	
+
 	createToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := createToken.SignedString(config.JwtKey)
-	if err != nil {
-		return "", err
-	}
-	
-	return tokenString, nil
+	return createToken.SignedString(config.JwtKey)
 }
 
-func (s *userService)RefreshToken(refreshToken string) (models.TokenPair, error) {
+
+func (s *userService) RefreshToken(refreshToken string) (models.TokenPair, error) {
 	token, err := jwt.ParseWithClaims(refreshToken, &models.UserClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return config.JwtKey, nil
 	})
@@ -119,7 +117,11 @@ func (s *userService)RefreshToken(refreshToken string) (models.TokenPair, error)
 		return models.TokenPair{}, errInvalidClaims
 	}
 
-	return s.GenerateTokenPair(claims.UserID, claims.Username, claims.Role), nil
+	if claims.TokenType != "refresh" {
+		return models.TokenPair{}, errors.New("недопустимый тип токена для обновления")
+	}
 
+	return s.GenerateTokenPair(claims.UserID, claims.Username, claims.Role), nil
 }
+
  
