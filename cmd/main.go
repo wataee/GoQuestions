@@ -5,6 +5,7 @@ import (
 
 	"github.com/joho/godotenv"
 
+	"github.com/wataee/GoQuestions/internal/admin"
 	"github.com/wataee/GoQuestions/internal/database"
 	"github.com/wataee/GoQuestions/internal/database/repository"
 	"github.com/wataee/GoQuestions/internal/questions"
@@ -30,6 +31,9 @@ func main() {
     questionsService := questions.NewQuestionsService(questionsRepo)
     questionsHandler := questions.NewHandler(questionsService)
 
-    r := router.SetupRouter(userHandler, questionsHandler)
+    adminService := admin.NewAdminService(userRepo, questionsRepo)
+    adminHandler := admin.NewHandler(adminService)
+
+    r := router.SetupRouter(userHandler, questionsHandler, adminHandler)
     r.Run()
 }

@@ -3,13 +3,13 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 
-
+	"github.com/wataee/GoQuestions/internal/admin"
 	"github.com/wataee/GoQuestions/internal/middleware"
-	"github.com/wataee/GoQuestions/internal/user"
 	"github.com/wataee/GoQuestions/internal/questions"
+	"github.com/wataee/GoQuestions/internal/user"
 )
 
-func SetupRouter(userHandler *user.Handler, questionsHandler *questions.Handler) *gin.Engine {
+func SetupRouter(userHandler *user.Handler, questionsHandler *questions.Handler, adminHandler *admin.Handler) *gin.Engine {
 	r := gin.Default()
 	r.Use(middleware.CORS())
 
@@ -21,14 +21,15 @@ func SetupRouter(userHandler *user.Handler, questionsHandler *questions.Handler)
 	{
 		auth.GET("/profile", userHandler.Profile)
 		auth.GET("/questions", questionsHandler.QuestionsListHandler)
-		auth.POST("/addquestion", questionsHandler.QuestionAddHandler)
 	}
 
 	admin := r.Group("/admin")
-	//admin.Use(middleware.AdminAuthMiddleware())
+	admin.Use(middleware.AuthMiddleware())
+	admin.Use(middleware.AdminAuthMiddleware())
 	{
-		admin.GET("/user_list", )
+		admin.GET("/user_list", adminHandler.UserListHandler)
 		admin.DELETE("/delete_user/:id", )
+		admin.POST("/addquestion", questionsHandler.QuestionAddHandler)
 	}
 	
 	return r

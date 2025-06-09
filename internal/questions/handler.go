@@ -28,7 +28,7 @@ func (h *Handler) QuestionsListHandler(c *gin.Context) {
 func (h *Handler) QuestionAddHandler(c *gin.Context) {
 	var input models.AddQuestionDTO
 
-	if err := c.BindJSON(&input); err != nil {
+	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}

@@ -10,6 +10,7 @@ type UserRepository interface {
 	CreateUser(user models.UserInputDTO) (int,error)
 	GetByUsername(username string) (models.Users, error)
 	GetByID(userID int) (models.Users, error)
+	GetUserList() ([]models.Users, error)
  }
 
 type userRepository struct {
@@ -51,4 +52,14 @@ func (r *userRepository) GetByID(userID int) (models.Users, error) {
 		return models.Users{}, err
 	}
 	return user, nil
+}
+
+func (r *userRepository) GetUserList() ([]models.Users, error) {
+	var users []models.Users
+	if err := r.db.Find(&users).Error; err != nil {
+		return users, err
+	}
+	return users, nil
+
+
 }
