@@ -13,7 +13,13 @@ import (
 	"github.com/wataee/GoQuestions/internal/user"
 )
 
-
+// @title GoQuestions Restful API
+// @version 1.0
+// @host localhost:8080
+// @BasePath /
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 func main() {
     err := godotenv.Load()
     if err != nil {

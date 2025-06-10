@@ -1,0 +1,257 @@
+basePath: /
+definitions:
+  models.AddQuestionDTO:
+    properties:
+      correct_answer:
+        type: boolean
+      question_text:
+        type: string
+    type: object
+  models.ProfileDTO:
+    properties:
+      answers:
+        type: integer
+      created_at:
+        type: string
+      id:
+        type: integer
+      role:
+        type: string
+      username:
+        type: string
+    type: object
+  models.QuestionDTO:
+    properties:
+      id:
+        type: integer
+      question_text:
+        type: string
+    type: object
+  models.RefreshTokenRequest:
+    properties:
+      refresh_token:
+        type: string
+    type: object
+  models.TokenPair:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
+        type: string
+    type: object
+  models.UserInputDTO:
+    properties:
+      password:
+        maxLength: 128
+        minLength: 7
+        type: string
+      role:
+        enum:
+        - admin
+        - user
+        type: string
+      username:
+        maxLength: 38
+        minLength: 3
+        type: string
+    required:
+    - password
+    - role
+    - username
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  title: GoQuestions Restful API
+  version: "1.0"
+paths:
+  /admin/addquestion:
+    post:
+      consumes:
+      - application/json
+      description: Adds a new question to the system
+      parameters:
+      - description: Question data
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.AddQuestionDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Question added successfully
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Add question
+      tags:
+      - admin
+  /admin/delete_user/{id}:
+    delete:
+      description: Deletes user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User deleted successfully
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete user
+      tags:
+      - admin
+  /admin/user_list:
+    get:
+      description: Returns a list of all users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              items:
+                $ref: '#/definitions/models.ProfileDTO'
+              type: array
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get user list
+      tags:
+      - admin
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: The handler registers or logs in the user, returning a refresh
+        and access token.
+      parameters:
+      - description: Input values
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserInputDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TokenPair'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Login or Registration
+      tags:
+      - user
+  /profile:
+    get:
+      description: Returns the profile of the authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ProfileDTO'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      - BearerAuth: []
+      summary: Get user profile
+      tags:
+      - user
+  /questions:
+    get:
+      description: Returns a list of all available questions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              items:
+                $ref: '#/definitions/models.QuestionDTO'
+              type: array
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get questions list
+      tags:
+      - questions
+  /refresh:
+    post:
+      consumes:
+      - application/json
+      description: Refreshes access and refresh tokens using a valid refresh token
+      parameters:
+      - description: Refresh token
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.RefreshTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TokenPair'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Refresh Token
+      tags:
+      - user
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

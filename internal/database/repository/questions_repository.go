@@ -7,7 +7,7 @@ import (
 )
 
 type QuestionsRepository interface {
-	GetQuestions() ([]models.Questions, error)
+	GetQuestions() ([]models.Question, error)
 	AddQuestion(question models.AddQuestionDTO) (error)
 }
 
@@ -19,8 +19,8 @@ func NewQuestionsRepository(db *gorm.DB) QuestionsRepository {
 	return &questionsRepository{db: db}
 }
 
-func (r *questionsRepository) GetQuestions() ([]models.Questions, error) {
-	var questions []models.Questions
+func (r *questionsRepository) GetQuestions() ([]models.Question, error) {
+	var questions []models.Question
 
 	if err := r.db.Find(&questions).Error; err != nil {
 		return nil, err
@@ -29,7 +29,7 @@ func (r *questionsRepository) GetQuestions() ([]models.Questions, error) {
 }
 
 func (r *questionsRepository)AddQuestion(dto models.AddQuestionDTO) (error) {
-	var existing models.Questions
+	var existing models.Question
 	err := r.db.Where("question_text = ?", dto.QuestionText).First(&existing).Error
 	if err == nil {
 		return errors.New("вопрос в таблице уже существует")
@@ -39,7 +39,7 @@ func (r *questionsRepository)AddQuestion(dto models.AddQuestionDTO) (error) {
 	}
 	
 
-	question := models.Questions{
+	question := models.Question {
 		QuestionText: dto.QuestionText,
 		CorrectAnswer: dto.CorrectAnswer,
 	}

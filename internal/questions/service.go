@@ -7,7 +7,6 @@ import (
 
 type QuestionsService interface {
 	QuestionsList() ([]models.QuestionDTO, error)
-
 }
 
 type questionsService struct {

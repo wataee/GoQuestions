@@ -8,11 +8,10 @@ import (
 
 type UserRepository interface {
 	CreateUser(user models.UserInputDTO) (int,error)
-	GetByUsername(username string) (models.Users, error)
-	GetByID(userID int) (models.Users, error)
-	GetUserList() ([]models.Users, error)
+	GetByUsername(username string) (models.User, error)
+	GetByID(userID int) (models.User, error)
+	GetUserList() ([]models.User, error)
 	DeleteUser(userID int) (error)
-
  }
 
 type userRepository struct {
@@ -24,7 +23,7 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 }
 
 func (r *userRepository) CreateUser(input models.UserInputDTO) (int, error) {
-	user := models.Users{
+	user := models.User{
     Username: input.Username,
     Password: input.Password,
     Role:     input.Role,
@@ -37,27 +36,27 @@ func (r *userRepository) CreateUser(input models.UserInputDTO) (int, error) {
 	return int(user.ID), nil
 }
 
-func (r *userRepository) GetByUsername(username string) (models.Users, error) {
-	var user models.Users
+func (r *userRepository) GetByUsername(username string) (models.User, error) {
+	var user models.User
 	if err := r.db.Where("username = ?", username).First(&user).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return models.Users{}, gorm.ErrRecordNotFound
+			return models.User{}, gorm.ErrRecordNotFound
 		}
-		return models.Users{}, err
+		return models.User{}, err
 	}
 	return user, nil
 }
 
-func (r *userRepository) GetByID(userID int) (models.Users, error) {
-	var user models.Users
+func (r *userRepository) GetByID(userID int) (models.User, error) {
+	var user models.User
 	if err := r.db.Where("id = ?", userID).First(&user).Error; err != nil {
-		return models.Users{}, err
+		return models.User{}, err
 	}
 	return user, nil
 }
 
-func (r *userRepository) GetUserList() ([]models.Users, error) {
-	var users []models.Users
+func (r *userRepository) GetUserList() ([]models.User, error) {
+	var users []models.User
 	if err := r.db.Find(&users).Error; err != nil {
 		return users, err
 	}
@@ -65,7 +64,7 @@ func (r *userRepository) GetUserList() ([]models.Users, error) {
 }
 
 func (r *userRepository) DeleteUser(userID int) (error) {
-	var user []models.Users
+	var user []models.User
 	if err := r.db.Where("id = ?", userID).Delete(&user).Error; err != nil {
 		return err
 	}

@@ -7,11 +7,17 @@ import (
 	"github.com/wataee/GoQuestions/internal/middleware"
 	"github.com/wataee/GoQuestions/internal/questions"
 	"github.com/wataee/GoQuestions/internal/user"
+
+	"github.com/swaggo/gin-swagger"
+	"github.com/swaggo/files"
+	_ "github.com/wataee/GoQuestions/docs"
 )
 
 func SetupRouter(userHandler *user.Handler, questionsHandler *questions.Handler, adminHandler *admin.Handler) *gin.Engine {
 	r := gin.Default()
 	r.Use(middleware.CORS())
+	
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	r.POST("/login", userHandler.Login) // Login/Registration
 	r.POST("/refresh", userHandler.RefreshToken)
