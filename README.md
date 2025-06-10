@@ -54,13 +54,13 @@ GoQuestions/
 ## 📦 Установка и запуск
 
 ```bash
-git clone https://github.com/yourusername/GoQuestions.git
+git clone https://github.com/wataee/GoQuestions.git
 cd GoQuestions
 go mod tidy
 go run cmd/main.go
 ````
 
-> Перед запуском укажите переменные окружения (например, `JWT_SECRET`) или настройте конфиг.
+> Перед запуском укажите переменные окружения
 
 ## 📘 Swagger-документация
 
