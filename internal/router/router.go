@@ -28,8 +28,8 @@ func SetupRouter(userHandler *user.Handler, questionsHandler *questions.Handler,
 	admin.Use(middleware.AdminAuthMiddleware())
 	{
 		admin.GET("/user_list", adminHandler.UserListHandler)
-		admin.DELETE("/delete_user/:id", )
-		admin.POST("/addquestion", questionsHandler.QuestionAddHandler)
+		admin.DELETE("/delete_user/:id", adminHandler.DeleteUserHandler)
+		admin.POST("/addquestion", adminHandler.QuestionAddHandler)
 	}
 	
 	return r

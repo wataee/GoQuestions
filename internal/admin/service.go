@@ -1,15 +1,17 @@
 package admin
 
 import (
+	"strconv"
+
 	"github.com/wataee/GoQuestions/internal/database/repository"
 	"github.com/wataee/GoQuestions/internal/models"
+	
 )
 
-// admin.GET("/user_list", )
-// admin.DELETE("/delete_user/:id", )
-// admin.POST("/addquestion", questionsHandler.QuestionAddHandler)
 type AdminService interface {
 	UserList() ([]models.ProfileDTO, error)
+	QuestionsAdd(question models.AddQuestionDTO) (error)
+	DeleteUser(userID string) (error)
 }
 
 type adminService struct {
@@ -38,4 +40,26 @@ func (a *adminService) UserList() ([]models.ProfileDTO, error) {
 	}
 
 	return usersDTO, nil
+}
+
+func (a *adminService) QuestionsAdd(question models.AddQuestionDTO) (error) {
+	err := a.questionsRepo.AddQuestion(question)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (a *adminService) DeleteUser(userID string) (error) {
+	id, err := strconv.Atoi(userID)
+	if err != nil {
+		return err
+	}
+	if err := a.userRepo.DeleteUser(id); err != nil {
+		return err
+	}
+
+	return nil
+
 }

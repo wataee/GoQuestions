@@ -7,7 +7,6 @@ import (
 
 type QuestionsService interface {
 	QuestionsList() ([]models.QuestionDTO, error)
-	QuestionsAdd(question models.AddQuestionDTO) (error)
 
 }
 
@@ -34,13 +33,4 @@ func (s *questionsService) QuestionsList() ([]models.QuestionDTO, error) {
 		})
 	}
 	return questionsDTO, nil
-}
-
-func (s *questionsService) QuestionsAdd(question models.AddQuestionDTO) (error) {
-	err := s.repo.AddQuestion(question)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

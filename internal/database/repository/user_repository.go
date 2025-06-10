@@ -11,6 +11,8 @@ type UserRepository interface {
 	GetByUsername(username string) (models.Users, error)
 	GetByID(userID int) (models.Users, error)
 	GetUserList() ([]models.Users, error)
+	DeleteUser(userID int) (error)
+
  }
 
 type userRepository struct {
@@ -60,6 +62,12 @@ func (r *userRepository) GetUserList() ([]models.Users, error) {
 		return users, err
 	}
 	return users, nil
+}
 
-
+func (r *userRepository) DeleteUser(userID int) (error) {
+	var user []models.Users
+	if err := r.db.Where("id = ?", userID).Delete(&user).Error; err != nil {
+		return err
+	}
+	return nil
 }
